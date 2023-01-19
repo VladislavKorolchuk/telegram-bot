@@ -1,7 +1,7 @@
 --liquibase formatted sql
 
---changeset KorolchukVladislav:3
-CREATE TABLE Notifications
+--changeset KorolchukVladislav:5
+CREATE TABLE Notifications1
 (
     id bigserial,
     chatID INTEGER,

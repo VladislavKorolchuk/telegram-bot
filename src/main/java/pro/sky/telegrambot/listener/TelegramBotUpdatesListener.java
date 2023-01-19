@@ -47,22 +47,30 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
             // ------------------------------------------------------------------------
             String messageText = update.message().text();
+            if (update.message() == null || update.message().text() == null) {
+                throw new RuntimeException();
+            }
+
+
             long chatId = update.message().chat().id();
 
             if (messageText.equals("/start")) {
                 SendResponse response = telegramBot.execute(new SendMessage(chatId, "Привет"));
+            } else {
+                String regex = "([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(messageText);
+                if (matcher.matches()) {
+                    String date = matcher.group(1);
+                    String str = matcher.group(3);
+                    Notifications notification = new Notifications(1L, chatId, str, LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+                    notificationRepository.save(notification);
+                    SendResponse response = telegramBot.execute(new SendMessage(chatId, "Нотификация добавлена"));
+                }
+                else {
+                    SendResponse response = telegramBot.execute(new SendMessage(chatId, "Введите в таком формате: 01.01.2022 20:00 Сделать домашнюю работу: "));
+                }
             }
-
-            String regex = "([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)";
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(messageText);
-            if (matcher.matches()) {
-                String date = matcher.group(1);
-                String str = matcher.group(3);
-                Notifications notification = new Notifications(1L, chatId, str, LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
-                notificationRepository.save(notification);
-            }
-
             //--------------------------------------------------------------------------
 
         });
